@@ -95,7 +95,7 @@ O sistema possui uma rotina de inicialização inteligente (Auto-Migration/Seed)
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Database=laser_producao_db;User=root;Password=sua_senha;"
+    "MySqlConnection": "Server=localhost;Database=laser_producao_db;User=root;Password=sua_senha;"
   }
 }
 ```
