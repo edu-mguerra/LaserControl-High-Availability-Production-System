@@ -1,0 +1,6 @@
+@LaserProduction.API_HostAddress = http://localhost:5009
+
+GET {{LaserProduction.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="LaserProduction.API/LaserProduction.API.csproj" />
+  <Project Path="LaserProduction.Desktop/LaserProduction.Desktop.csproj" />
+  <Project Path="LaserProduction.Shared/LaserProduction.Shared.csproj" />
+</Solution>
