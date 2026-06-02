@@ -37,17 +37,20 @@ namespace LaserProduction.Desktop.Services
             }
         }
 
-        public void SalvarOffline(NovaProducaoDto dto)
+        public void SalvarOffline(NovaProducaoDto dto, string tagGerada)
         {
             using (var conexao = new SqliteConnection(_connectionString))
             {
                 conexao.Open();
-                string json = JsonSerializer.Serialize(dto); string query = "INSERT INTO ProducaoOffline (DadosJson, DataRegistro) VALUES ($json, $data);";
+
+                string json = JsonSerializer.Serialize(dto);
+                string query = "INSERT INTO ProducaoOffline (DadosJson, DataRegistro) VALUES ($json, $data);";
 
                 using (var comando = new SqliteCommand(query, conexao))
                 {
                     comando.Parameters.AddWithValue("$json", json);
                     comando.Parameters.AddWithValue("$data", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+
                     comando.ExecuteNonQuery();
                 }
             }

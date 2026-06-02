@@ -1,5 +1,6 @@
 ﻿using LaserProduction.API.Data;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MySql.Data.MySqlClient;
 using System;
@@ -13,15 +14,32 @@ namespace LaserProduction.API.Data
         {
             using (var scope = app.Services.CreateScope())
             {
+                var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
                 var dbService = scope.ServiceProvider.GetRequiredService<DbConnectionService>();
 
                 try
                 {
+                    string conexaoOriginal = config.GetConnectionString("MySqlConnection");
+
+                    var builder = new MySqlConnectionStringBuilder(conexaoOriginal);
+                    string nomeBanco = builder.Database;
+
+                    builder.Database = "";
+                    using (var serverConnection = new MySqlConnection(builder.ConnectionString))
+                    {
+                        serverConnection.Open();
+                        using (var cmd = new MySqlCommand($"CREATE DATABASE IF NOT EXISTS `{nomeBanco}`;", serverConnection))
+                        {
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+
                     using (var connection = dbService.CreateConnection())
                     {
+
+
                         connection.Open();
 
-                        // 1. Tabela de Usuários (com ENUM)
                         ExecuteCommand(@"
                         CREATE TABLE IF NOT EXISTS usuarios (
                             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -33,7 +51,6 @@ namespace LaserProduction.API.Data
                             data_cadastro DATETIME DEFAULT CURRENT_TIMESTAMP
                         );", connection);
 
-                        // 2. Tabela de Parâmetros
                         ExecuteCommand(@"
                         CREATE TABLE IF NOT EXISTS parametros (
                             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -42,7 +59,6 @@ namespace LaserProduction.API.Data
                             caminho_backup VARCHAR(255) NOT NULL
                         );", connection);
 
-                        // 3. Tabela de Máquinas
                         ExecuteCommand(@"
                         CREATE TABLE IF NOT EXISTS maquinas (
                             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -50,7 +66,6 @@ namespace LaserProduction.API.Data
                             ativa BOOLEAN DEFAULT TRUE
                         );", connection);
 
-                        // 4. Tabela de Produções (com restrições completas)
                         ExecuteCommand(@"
                         CREATE TABLE IF NOT EXISTS producoes (
                             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -66,7 +81,6 @@ namespace LaserProduction.API.Data
                             FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
                         );", connection);
 
-                        // 5. Tabela de Histórico de Transferências
                         ExecuteCommand(@"
                         CREATE TABLE IF NOT EXISTS historico_transferencias (
                             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -81,19 +95,16 @@ namespace LaserProduction.API.Data
                             FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
                         );", connection);
 
-                        // 6. Inserção do Usuário Admin
                         ExecuteCommand(@"
                         INSERT INTO usuarios (nome, login, senha, perfil) 
                         SELECT 'Administrador do Sistema', 'admin', '$2a$12$gxJbZRYsE5RNai33MOYSAuHzDC0U2nm.tTGkLi5DNFMLjIo/9n0Rm', 'MASTER'
                         WHERE NOT EXISTS (SELECT 1 FROM usuarios WHERE login = 'admin');", connection);
 
-                        // 7. Inserção dos Parâmetros Iniciais
                         ExecuteCommand(@"
                         INSERT INTO parametros (porta_laser, prefixo_lote, caminho_backup)
                         SELECT 'COM1', 'LT-', 'C:\\Laser\\'
                         WHERE NOT EXISTS (SELECT 1 FROM parametros);", connection);
 
-                        // 8. Inserção das Máquinas
                         ExecuteCommand(@"
                         INSERT INTO maquinas (nome) SELECT 'Máquina Laser 01' WHERE NOT EXISTS (SELECT 1 FROM maquinas WHERE nome = 'Máquina Laser 01');
                         INSERT INTO maquinas (nome) SELECT 'Máquina Laser 02' WHERE NOT EXISTS (SELECT 1 FROM maquinas WHERE nome = 'Máquina Laser 02');
