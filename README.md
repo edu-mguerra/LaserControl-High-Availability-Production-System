@@ -6,12 +6,13 @@ Um sistema robusto e resiliente de controle de produção focado no chão de fá
 
 ## 🏗️ Arquitetura do Sistema
 
-O projeto foi dividido em uma arquitetura distribuída para garantir segurança e escalabilidade:
+O projeto foi estruturado utilizando o padrão de arquitetura distribuída e modular, garantindo o desacoplamento de responsabilidades, segurança e escalabilidade:
 
-* **Desktop App (Front-end/Cliente):** Desenvolvido em C# (Windows Forms) utilizando a biblioteca gráfica ReaLTaiizor (Material UI). Responsável pela interface com o operador, comunicação direta com a porta Serial (COM) da máquina laser e gestão do banco de dados local.
-* **Web API (Back-end/Servidor):** Camada intermediária que processa as regras de negócio, aplica hashing de segurança e protege as credenciais do banco principal.
-* **MySQL (Banco de Dados Principal):** Servidor central hospedado na nuvem/rede local que armazena toda a verdade do sistema (Usuários, Produções, Máquinas).
-* **SQLite (Banco de Dados Local):** Atua como um "cofre de emergência" na máquina do operador para garantir que nenhuma tag de produção seja perdida caso a rede falhe.
+* **Desktop App (Front-end/Cliente):** Desenvolvido em C# (Windows Forms) utilizando a biblioteca gráfica ReaLTaiizor (Material UI). É o responsável pela interface direta com o operador no chão de fábrica, comunicação via porta Serial (COM) com o hardware da máquina laser e gestão do banco de dados de contingência local.
+* **Web API (Back-end/Servidor):** Camada intermediária REST responsável por centralizar as regras de negócio complexas da produção, aplicar hashing seguro de senhas com `BCrypt` e proteger as credenciais de acesso direto à infraestrutura principal.
+* **LaserProduction.Shared (Camada de Compartilhamento):** Biblioteca de classes (`Class Library`) que centraliza as entidades de domínio, objetos de transferência de dados (DTOs como `UsuarioDto`, `NovaProducaoDto`, `ProducaoOffline`) e validações comuns. É referenciada tanto pelo projeto Desktop quanto pela Web API, garantindo consistência total nos contratos de dados trafegados.
+* **MySQL (Banco de Dados Principal):** Servidor centralizado (hospedado na nuvem ou rede local) que armazena o estado global e histórico de auditoria do sistema (Usuários, Produções, Máquinas, Logs).
+* **SQLite (Banco de Dados Local):** Atua como um "cofre de emergência" na máquina local do operador (`producao_offline.db`), mantendo a fila de TAGs de produção retidas de forma resiliente em cenários de isolamento de rede.
 
 ---
 
@@ -190,5 +191,11 @@ Acesse a tela **Parâmetros** para configurar:
 ✅ Carga automática de dados iniciais (Seed)  
 ✅ Criação automática do banco SQLite offline  
 ✅ Suporte ao Modo Simulação da máquina Laser
+
+## 📺 Demonstração em Vídeo
+
+Clique na imagem abaixo para assistir ao funcionamento do sistema em tempo real:
+
+[![Sistema de Controle de Produção a Laser](https://i.ytimg.com/vi/62wg7EepQGs/maxresdefault.jpg)](https://www.youtube.com/watch?v=62wg7EepQGs)
 
 *Desenvolvido para garantir máxima estabilidade e rastreabilidade na indústria de gravação.*
